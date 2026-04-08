@@ -1,0 +1,5 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/NEXUS-STRATUM/NEXUS-STRATUM.fsproj" />
+  </Folder>
+</Solution>
