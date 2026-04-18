@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <Compile Include="Core.fs" />
+    <Compile Include="InMemory.fs" />
   </ItemGroup>
 
 </Project>
