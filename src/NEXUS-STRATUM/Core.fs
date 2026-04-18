@@ -1,5 +1,7 @@
 namespace Stratum
 
+open System
+
 /// The set of storage backends STRATUM can target.
 /// Each case carries only the configuration its backend needs.
 type Backend =
@@ -10,26 +12,38 @@ type Backend =
     | DuckDB      of connectionString: string
     | VectorDB    of endpoint: string * collectionName: string
 
-/// A stream is a named, ordered sequence of serialized events.
+/// A stream is a named, ordered sequence of events.
 type StreamId = StreamId of string
 
-/// Position within a stream, used for optimistic concurrency and reads.
+/// Position within a stream — used for reads.
 type StreamPosition =
     | Start
-    | At     of uint64
+    | At  of uint64
     | End
 
-/// A raw stored event — payload is opaque bytes; the store does not interpret it.
-type StoredEvent = {
-    StreamId  : StreamId
-    Position  : uint64
-    Data      : byte[]
-    CreatedAt : System.DateTimeOffset
+/// An event to be appended.
+/// The caller supplies identity and causation metadata; the store assigns position and timestamp.
+type EventToAppend = {
+    EventId       : Guid    // UUIDv7 — generate with Guid.CreateVersion7()
+    CorrelationId : Guid    // propagated unchanged from the originating command/request
+    CausationId   : Guid    // ID of the command or event that directly caused this one
+    Data          : byte[]
 }
 
-/// Capabilities every STRATUM store must provide.
-/// Implementations are one per Backend.
+/// A stored event — EventToAppend fields plus store-assigned position and timestamp.
+type StoredEvent = {
+    EventId       : Guid
+    CorrelationId : Guid
+    CausationId   : Guid
+    StreamId      : StreamId
+    Position      : uint64          // stream-local ordinal, 0-based
+    Data          : byte[]
+    OccurredAt    : DateTimeOffset  // UTC, assigned by the store at write time
+}
+
+/// Capabilities every STRATUM backend must provide.
+/// Append always succeeds — conflicts are domain events, not storage errors.
 type IEventStore =
-    abstract Append : StreamId -> expectedPosition: StreamPosition -> events: byte[] list -> Async<Result<uint64, string>>
+    abstract Append : StreamId -> events: EventToAppend list -> Async<uint64>
     abstract Read   : StreamId -> from: StreamPosition -> Async<StoredEvent list>
     abstract Exists : StreamId -> Async<bool>
