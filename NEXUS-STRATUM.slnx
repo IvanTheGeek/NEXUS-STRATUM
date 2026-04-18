@@ -2,4 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/NEXUS-STRATUM/NEXUS-STRATUM.fsproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/NEXUS-STRATUM.Tests/NEXUS-STRATUM.Tests.fsproj" />
+  </Folder>
 </Solution>
