@@ -35,6 +35,7 @@ module InMemory =
                             { EventId       = e.EventId
                               CorrelationId = e.CorrelationId
                               CausationId   = e.CausationId
+                              EventType     = e.EventType
                               StreamId      = streamId
                               Position      = nextPos + uint64 i
                               Data          = e.Data

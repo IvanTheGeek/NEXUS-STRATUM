@@ -15,6 +15,7 @@ let private mkEvent () : EventToAppend =
     { EventId       = Guid.CreateVersion7()
       CorrelationId = Guid.NewGuid()
       CausationId   = Guid.NewGuid()
+      EventType     = "TestEvent"
       Data          = [||] }
 
 // ---------------------------------------------------------------------------
@@ -54,7 +55,7 @@ let allPropertyTests =
                 let! data  = Gen.list (Range.linear 0 64) (Gen.byte (Range.linear 0uy 255uy))
                               |> Gen.map List.toArray
                 let store  = InMemory.create()
-                let evt    = { EventId = Guid.CreateVersion7(); CorrelationId = Guid.NewGuid(); CausationId = Guid.NewGuid(); Data = data }
+                let evt    = { EventId = Guid.CreateVersion7(); CorrelationId = Guid.NewGuid(); CausationId = Guid.NewGuid(); EventType = "TestEvent"; Data = data }
                 let _      = store.Append (StreamId "s") [evt] |> run
                 let stored = store.Read (StreamId "s") Start   |> run
                 return stored.[0].Data = data

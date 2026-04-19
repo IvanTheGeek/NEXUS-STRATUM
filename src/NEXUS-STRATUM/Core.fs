@@ -22,11 +22,12 @@ type StreamPosition =
     | End
 
 /// An event to be appended.
-/// The caller supplies identity and causation metadata; the store assigns position and timestamp.
+/// The caller supplies identity, type, and causation metadata; the store assigns position and timestamp.
 type EventToAppend = {
     EventId       : Guid    // UUIDv7 — generate with Guid.CreateVersion7()
     CorrelationId : Guid    // propagated unchanged from the originating command/request
     CausationId   : Guid    // ID of the command or event that directly caused this one
+    EventType     : string  // discriminator — used to filter and deserialize on read
     Data          : byte[]
 }
 
@@ -35,6 +36,7 @@ type StoredEvent = {
     EventId       : Guid
     CorrelationId : Guid
     CausationId   : Guid
+    EventType     : string          // discriminator — matches the EventToAppend value
     StreamId      : StreamId
     Position      : uint64          // stream-local ordinal, 0-based
     Data          : byte[]

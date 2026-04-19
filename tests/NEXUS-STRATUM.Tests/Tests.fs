@@ -12,12 +12,14 @@ let private mkEvent () : EventToAppend =
     { EventId       = Guid.CreateVersion7()
       CorrelationId = Guid.NewGuid()
       CausationId   = Guid.NewGuid()
+      EventType     = "TestEvent"
       Data          = [||] }
 
 let private mkEventWithData (data: byte[]) : EventToAppend =
     { EventId       = Guid.CreateVersion7()
       CorrelationId = Guid.NewGuid()
       CausationId   = Guid.NewGuid()
+      EventType     = "TestEvent"
       Data          = data }
 
 let private run a = Async.RunSynchronously a
@@ -135,17 +137,19 @@ let existsTests =
 let metadataTests =
     testList "Metadata" [
 
-        testCase "EventId, CorrelationId, CausationId survive the store round-trip" <| fun () ->
-            let store  = InMemory.create()
-            let evtId  = Guid.CreateVersion7()
-            let corrId = Guid.NewGuid()
-            let cauId  = Guid.NewGuid()
-            let evt    = { EventId = evtId; CorrelationId = corrId; CausationId = cauId; Data = [||] }
-            let _      = store.Append (StreamId "s") [evt] |> run
-            let stored = store.Read (StreamId "s") Start   |> run
-            Expect.equal stored.[0].EventId       evtId  "EventId"
-            Expect.equal stored.[0].CorrelationId corrId "CorrelationId"
-            Expect.equal stored.[0].CausationId   cauId  "CausationId"
+        testCase "EventId, CorrelationId, CausationId, EventType survive the store round-trip" <| fun () ->
+            let store     = InMemory.create()
+            let evtId     = Guid.CreateVersion7()
+            let corrId    = Guid.NewGuid()
+            let cauId     = Guid.NewGuid()
+            let eventType = "SomethingHappened"
+            let evt       = { EventId = evtId; CorrelationId = corrId; CausationId = cauId; EventType = eventType; Data = [||] }
+            let _         = store.Append (StreamId "s") [evt] |> run
+            let stored    = store.Read (StreamId "s") Start   |> run
+            Expect.equal stored.[0].EventId       evtId     "EventId"
+            Expect.equal stored.[0].CorrelationId corrId    "CorrelationId"
+            Expect.equal stored.[0].CausationId   cauId     "CausationId"
+            Expect.equal stored.[0].EventType     eventType "EventType"
 
         testCase "event data survives the store round-trip" <| fun () ->
             let store = InMemory.create()
